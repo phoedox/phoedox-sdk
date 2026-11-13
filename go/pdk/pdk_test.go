@@ -49,3 +49,41 @@ func TestGraphOpsRefs(t *testing.T) {
 		t.Fatalf("got %s", b)
 	}
 }
+
+func TestManifestRules(t *testing.T) {
+	base := Manifest{ID: "de.example.ups", Name: "USV", Version: "1.2.0", HostAPI: "1", Engines: Engines{Phoedox: ">=1.0.0 <2.0.0"}}
+	for name, mod := range map[string]func(*Manifest){
+		"bad range": func(m *Manifest) { m.Engines.Phoedox = "latest" },
+		"bad kind":  func(m *Manifest) { m.Contributes.Kinds = []Kind{{ID: "UPS"}} },
+		"bad tool":  func(m *Manifest) { m.Contributes.MCPTools = []MCPTool{{Name: "Run Now"}} },
+		"bad event": func(m *Manifest) { m.Contributes.Events = []string{"cron:*"} },
+	} {
+		m := base
+		mod(&m)
+		if m.Validate() == nil {
+			t.Errorf("%s: expected error", name)
+		}
+	}
+	base.Contributes.Events = []string{"schedule:every=60s", "entity.*"}
+	if err := base.Validate(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestDecodeResponse(t *testing.T) {
+	var d EntityDetail
+	if err := decodeResponse([]byte(`{"ok":true,"result":{"entity":{"slug":"usv","attrs":{"ladung":80}}}}`), &d); err != nil || d.Entity.Slug != "usv" {
+		t.Fatalf("%v %+v", err, d)
+	}
+	err := decodeResponse([]byte(`{"ok":false,"error":"graph:write:server","code":"denied"}`), nil)
+	if !IsCode(err, "denied") {
+		t.Fatalf("%v", err)
+	}
+	var g GraphOps
+	ref := g.UpsertNamed("ups", "usv", "USV", map[string]any{"ladung": 1})
+	g.Link(ref, "powers", "nas", nil)
+	b, _ := json.Marshal(g)
+	if string(b) != `{"ops":[{"op":"upsert","ref":"$0","kind":"ups","id":"usv","name":"USV","attrs":{"ladung":1}},{"op":"link","from":"$0","rel":"powers","to":"nas"}]}` {
+		t.Fatal(string(b))
+	}
+}

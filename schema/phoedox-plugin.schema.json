@@ -3,46 +3,240 @@
   "$id": "https://phoedox.com/schema/phoedox-plugin.json",
   "title": "Phoedox plugin manifest",
   "type": "object",
-  "required": ["id", "name", "version", "hostApi", "engines"],
+  "required": [
+    "id",
+    "name",
+    "version",
+    "hostApi",
+    "engines"
+  ],
   "properties": {
-    "id": { "type": "string", "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$", "description": "Reverse-DNS id, e.g. de.example.ups" },
-    "name": { "type": "string", "minLength": 1 },
-    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$" },
-    "hostApi": { "type": "string", "pattern": "^\\d+$" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
+      "description": "Reverse-DNS id, e.g. de.example.ups"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$"
+    },
+    "hostApi": {
+      "type": "string",
+      "pattern": "^\\d+$"
+    },
     "engines": {
       "type": "object",
-      "required": ["phoedox"],
-      "properties": { "phoedox": { "type": "string", "description": "SemVer range, e.g. >=1.4.0 <2.0.0" } }
+      "required": [
+        "phoedox"
+      ],
+      "properties": {
+        "phoedox": {
+          "type": "string",
+          "description": "SemVer range, e.g. >=1.4.0 <2.0.0",
+          "pattern": "^((>=|<=|>|<|=)?\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?\\s*)+$"
+        }
+      }
     },
     "backend": {
       "type": "object",
-      "properties": { "wasm": { "type": "string" }, "memoryMb": { "type": "integer", "minimum": 1, "maximum": 256 } }
+      "properties": {
+        "wasm": {
+          "type": "string"
+        },
+        "memoryMb": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      }
     },
-    "frontend": { "type": "object", "properties": { "module": { "type": "string" } } },
-    "criticalPath": { "type": "boolean", "description": "Plugin provides login or permission flows; never auto-disabled on recall, only isolated." },
+    "frontend": {
+      "type": "object",
+      "properties": {
+        "module": {
+          "type": "string",
+          "pattern": "\\.js$"
+        }
+      }
+    },
+    "criticalPath": {
+      "type": "boolean",
+      "description": "Plugin provides login or permission flows; never auto-disabled on recall, only isolated."
+    },
     "contributes": {
       "type": "object",
       "properties": {
-        "kinds": { "type": "array", "items": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "schema": { "type": "string" }, "icon": { "type": "string" } } } },
-        "relations": { "type": "array", "items": { "type": "object", "required": ["id", "from", "to"], "properties": { "id": { "type": "string" }, "from": { "type": "array", "items": { "type": "string" } }, "to": { "type": "array", "items": { "type": "string" } }, "card": { "type": "string" } } } },
-        "doctypes": { "type": "array", "items": { "type": "object", "required": ["id", "label"] } },
-        "blocks": { "type": "array", "items": { "type": "object", "required": ["id", "label", "element"] } },
-        "mcpTools": { "type": "array", "items": { "type": "object", "required": ["name"] } },
-        "events": { "type": "array", "items": { "type": "string" } }
+        "kinds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,39}$"
+              },
+              "schema": {
+                "type": "string",
+                "description": "JSON Schema file; top-level properties become attributes (x-unit for units)."
+              },
+              "icon": {
+                "type": "string",
+                "description": "Lucide icon name, e.g. battery-charging"
+              }
+            }
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "from",
+              "to"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "from": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "to": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "card": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "doctypes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label"
+            ]
+          }
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label",
+              "element"
+            ]
+          }
+        },
+        "mcpTools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*$"
+              },
+              "description": {
+                "type": "string"
+              },
+              "input": {
+                "type": "string",
+                "description": "JSON Schema file of the arguments (type object)."
+              }
+            }
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(\\*|[a-z_]+\\.(\\*|[a-z_]+))$|^schedule:every=\\d+(s|m|h)$",
+            "description": "schedule:every=60s (at least 30 s) or an event type like entity.saved, entity.*"
+          }
+        }
       }
     },
-    "permissions": { "type": "array", "items": { "type": "string" } },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "license": {
       "type": "object",
       "properties": {
-        "noncommercial": { "enum": ["free", "paid"] },
+        "noncommercial": {
+          "enum": [
+            "free",
+            "paid"
+          ]
+        },
         "commercial": {
           "oneOf": [
-            { "enum": ["free"] },
-            { "type": "object", "required": ["plan"], "properties": { "plan": { "type": "string" }, "trialDays": { "type": "integer", "minimum": 0 } } }
+            {
+              "enum": [
+                "free"
+              ]
+            },
+            {
+              "type": "object",
+              "required": [
+                "plan"
+              ],
+              "properties": {
+                "plan": {
+                  "type": "string"
+                },
+                "trialDays": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
           ]
+        },
+        "paid": {
+          "type": "object",
+          "required": [
+            "plan"
+          ],
+          "properties": {
+            "plan": {
+              "type": "string"
+            },
+            "trialDays": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "description": "The plugin only runs with a license (or within the trial)."
         }
       }
+    },
+    "description": {
+      "type": "string",
+      "description": "One or two sentences shown to admins and in the store."
     }
   }
 }

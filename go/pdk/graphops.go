@@ -1,7 +1,8 @@
 package pdk
 
 // GraphOps collects graph changes a plugin returns from extract/on_event.
-// The host applies them atomically and checks permissions for each kind.
+// The host checks all ops (and the permission for each kind) first, then
+// applies them in order. Upserts merge attributes into existing entities.
 type GraphOps struct {
 	Ops []GraphOp `json:"ops"`
 }
@@ -12,7 +13,8 @@ type GraphOp struct {
 	Op    string         `json:"op"` // upsert | link | unlink | delete
 	Ref   string         `json:"ref,omitempty"`
 	Kind  string         `json:"kind,omitempty"`
-	ID    string         `json:"id,omitempty"`
+	ID    string         `json:"id,omitempty"` // slug of the entity
+	Name  string         `json:"name,omitempty"`
 	From  string         `json:"from,omitempty"`
 	Rel   string         `json:"rel,omitempty"`
 	To    string         `json:"to,omitempty"`
@@ -24,6 +26,18 @@ func (g *GraphOps) Upsert(kind, id string, attrs map[string]any) string {
 	ref := "$" + itoa(len(g.Ops))
 	g.Ops = append(g.Ops, GraphOp{Op: "upsert", Ref: ref, Kind: kind, ID: id, Attrs: attrs})
 	return ref
+}
+
+// UpsertNamed is Upsert with a display name for new entities.
+func (g *GraphOps) UpsertNamed(kind, id, name string, attrs map[string]any) string {
+	ref := g.Upsert(kind, id, attrs)
+	g.Ops[len(g.Ops)-1].Name = name
+	return ref
+}
+
+// Delete moves an entity to the trash.
+func (g *GraphOps) Delete(id string) {
+	g.Ops = append(g.Ops, GraphOp{Op: "delete", ID: id})
 }
 
 // Link adds an edge. from/to may be entity IDs or references from Upsert.
