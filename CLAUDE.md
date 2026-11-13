@@ -4,6 +4,7 @@ Plugin-SDK für Phoedox. Gesamtentscheidungen: `phoedox/phoedox` → `docs/decis
 
 ## Regeln
 
+- Immer die aktuelle stabile Go-Version und aktuelle Abhängigkeiten verwenden (`go` + `toolchain` in `go.mod`).
 - `schema/phoedox-plugin.schema.json`, `go/pdk/manifest.go` und `js/src/index.ts` beschreiben dasselbe Manifest – immer gemeinsam ändern.
 - `pdk.HostAPI` ist die Hauptversion der Host-API. Neue Host-Funktionen ohne Bruch; Breaking Changes nur mit neuer Hauptversion (Host unterstützt aktuelle + vorige).
 - Rechte im Manifest sind eine Whitelist (`permRe` in `manifest.go`). Neue Rechte zuerst im Host implementieren, dann hier freischalten.
