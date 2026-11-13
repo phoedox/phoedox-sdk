@@ -14,18 +14,20 @@ const HostAPI = "1"
 
 // Manifest mirrors schema/phoedox-plugin.schema.json.
 type Manifest struct {
-	ID           string          `json:"id"`
-	Name         string          `json:"name"`
-	Version      string          `json:"version"`
-	HostAPI      string          `json:"hostApi"`
-	Engines      Engines         `json:"engines"`
-	Description  string          `json:"description,omitempty"`
-	Backend      *Backend        `json:"backend,omitempty"`
-	Frontend     *Frontend       `json:"frontend,omitempty"`
-	CriticalPath bool            `json:"criticalPath,omitempty"`
-	Contributes  Contributes     `json:"contributes,omitempty"`
-	Permissions  []string        `json:"permissions,omitempty"`
-	License      json.RawMessage `json:"license,omitempty"`
+	ID           string      `json:"id"`
+	Name         string      `json:"name"`
+	Version      string      `json:"version"`
+	HostAPI      string      `json:"hostApi"`
+	Engines      Engines     `json:"engines"`
+	Description  string      `json:"description,omitempty"`
+	Backend      *Backend    `json:"backend,omitempty"`
+	Frontend     *Frontend   `json:"frontend,omitempty"`
+	CriticalPath bool        `json:"criticalPath,omitempty"`
+	Contributes  Contributes `json:"contributes,omitempty"`
+	// Permissions: net:fetch:<host> for a fixed host, net:fetch:config for
+	// the hosts of the addresses the project owner sets (secrets url, *_url).
+	Permissions []string        `json:"permissions,omitempty"`
+	License     json.RawMessage `json:"license,omitempty"`
 }
 
 type Engines struct {

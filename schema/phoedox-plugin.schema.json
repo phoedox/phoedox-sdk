@@ -179,6 +179,7 @@
     },
     "permissions": {
       "type": "array",
+      "description": "What the plugin may do. net:fetch:<host> allows one fixed host; net:fetch:config allows the hosts of the addresses the project owner sets for the plugin (secrets named url or *_url).",
       "items": {
         "type": "string"
       }
