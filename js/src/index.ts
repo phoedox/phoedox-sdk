@@ -6,9 +6,11 @@ export { html, css } from "lit";
 export interface PhoedoxSdk {
   graph: {
     get(id: string): Promise<Entity>;
+    /** Calls cb now and whenever the entry changes (polling while the page is visible). */
     watch(id: string, cb: (e: Entity) => void): () => void;
   };
   docs: { create(type: string, title?: string): Promise<{ id: string }> };
+  /** Runs a tool of this plugin's backend in the current project with the user's rights. */
   tool<T = unknown>(name: string, input: unknown): Promise<T>;
   ui: { toast(message: string): void };
   commands: { add(cmd: Command): void };
@@ -39,6 +41,8 @@ export interface BlockDef {
 export interface PluginDef {
   elements?: Record<string, CustomElementConstructor>;
   blocks?: BlockDef[];
+  /** Element shown on entries of a kind the plugin contributes: kind -> element tag. Gets the entry slug as attribute `entity`. */
+  views?: Record<string, string>;
   onReady?(sdk: PhoedoxSdk): void | Promise<void>;
 }
 
@@ -57,6 +61,9 @@ export function definePlugin(def: PluginDef): PluginDef {
   const elements = def.elements ?? {};
   for (const tag of Object.keys(elements)) {
     if (!tagRe.test(tag)) throw new Error(`definePlugin: element "${tag}" must match phx-<name>`);
+  }
+  for (const [kind, tag] of Object.entries(def.views ?? {})) {
+    if (!(tag in elements)) throw new Error(`definePlugin: view for "${kind}" uses unknown element "${tag}"`);
   }
   for (const b of def.blocks ?? []) {
     if (!(b.element in elements)) throw new Error(`definePlugin: block "${b.id}" uses unknown element "${b.element}"`);

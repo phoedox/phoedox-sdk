@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { definePlugin } from "./index";
+import { PhxElement, definePlugin } from "./index";
 
 class Dummy {}
 
@@ -14,4 +14,10 @@ describe("definePlugin", () => {
   test("rejects blocks with unknown elements", () => {
     expect(() => definePlugin({ blocks: [{ id: "x", element: "phx-x" }] })).toThrow();
   });
+});
+
+test("views must use own elements", () => {
+  class A extends PhxElement {}
+  expect(() => definePlugin({ elements: { "phx-a": A }, views: { ups: "phx-b" } })).toThrow();
+  expect(definePlugin({ elements: { "phx-a": A }, views: { ups: "phx-a" } }).views?.ups).toBe("phx-a");
 });
