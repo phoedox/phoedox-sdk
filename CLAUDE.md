@@ -1,6 +1,6 @@
 # Phoedox SDK
 
-Plugin-SDK für Phoedox. Gesamtentscheidungen: `phoedox/phoedox` → `docs/decisions.md`.
+Plugin-SDK für Phoedox. Gesamtentscheidungen: in Phoedox (https://app.phoedox.com, Projekt `phoedox`), v. a. ADR-0003 und ADR-0024; per MCP lesen, neue mit `create_decision` anlegen.
 
 ## Regeln
 
