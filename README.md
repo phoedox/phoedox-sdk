@@ -1,22 +1,22 @@
 # Phoedox SDK
 
-Werkzeuge für Phoedox-Plugins.
+Tools for Phoedox plugins.
 
-| Ordner | Inhalt |
+| Folder | Content |
 |---|---|
-| `go/pdk` | Go-PDK für Backend-Plugins (WASM, läuft über Extism im Phoedox-Server) |
-| `js` | `@phoedox/sdk` – Frontend-SDK mit Lit (`definePlugin`, `PhxElement`) |
-| `schema` | JSON-Schema für `phoedox-plugin.json` |
+| `go/pdk` | Go PDK for backend plugins (WASM, runs via Extism in the Phoedox server) |
+| `js` | `@phoedox/sdk` – frontend SDK with Lit (`definePlugin`, `PhxElement`) |
+| `schema` | JSON Schema for `phoedox-plugin.json` |
 
-Offizielle Plugins liegen in [phoedox-plugins](https://github.com/phoedox/phoedox-plugins),
-die Host-Seite in [phoedox](https://github.com/phoedox/phoedox) (`internal/plugins`).
+Official plugins are in [phoedox-plugins](https://github.com/phoedox/phoedox-plugins),
+the host side is in [phoedox](https://github.com/phoedox/phoedox) (`internal/plugins`).
 
-## Ein Plugin bauen
+## Building a plugin
 
 ```bash
 GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared -o backend.wasm ./backend
 ```
 
-## Lizenz
+## License
 
-MIT – siehe [LICENSE](LICENSE).
+MIT – see [LICENSE](LICENSE).
