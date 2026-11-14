@@ -41,7 +41,10 @@ export interface BlockDef {
 export interface PluginDef {
   elements?: Record<string, CustomElementConstructor>;
   blocks?: BlockDef[];
-  /** Element shown on entries of a kind the plugin contributes: kind -> element tag. Gets the entry slug as attribute `entity`. */
+  /**
+   * Element shown on entry pages of a kind: kind -> element tag. Gets the entry slug as attribute `entity`.
+   * Works for the plugin's own kinds and for core kinds (e.g. device); the element renders nothing when the entry is not its business.
+   */
   views?: Record<string, string>;
   onReady?(sdk: PhoedoxSdk): void | Promise<void>;
 }
