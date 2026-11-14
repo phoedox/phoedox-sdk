@@ -126,3 +126,18 @@ func decodeResponse(raw []byte, out any) error {
 	}
 	return json.Unmarshal(r.Result, out)
 }
+
+// Reading is one measured value of an entry (Graph.Record).
+type Reading struct {
+	Entity string     `json:"entity"` // slug or id
+	Metric string     `json:"metric"` // letters, digits, _ . : / -
+	Value  float64    `json:"value"`
+	Unit   string     `json:"unit,omitempty"`
+	At     *time.Time `json:"at,omitempty"` // default: now
+}
+
+// RecordResult tells how many readings were stored.
+type RecordResult struct {
+	Recorded int `json:"recorded"`
+	Skipped  int `json:"skipped"`
+}

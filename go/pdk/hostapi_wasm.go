@@ -133,6 +133,15 @@ func (graphAPI) Apply(ops *GraphOps) (ApplyResult, error) {
 	return r, err
 }
 
+// Record stores measured values of entries, e.g. a temperature or whether
+// a switch is on (1/0). It needs graph:write for the entries' kinds; at most
+// 500 per call, readings of one metric closer than 30 s are skipped.
+func (graphAPI) Record(readings []Reading) (RecordResult, error) {
+	var r RecordResult
+	err := call("graph.record", map[string]any{"readings": readings}, &r)
+	return r, err
+}
+
 type kvAPI struct{}
 
 // KV is a small key-value store per plugin and project (1000 keys, 256 KB
