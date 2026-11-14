@@ -78,7 +78,8 @@ type MCPTool struct {
 }
 
 // ToolTarget points from a tool argument to an entry: without Attr the
-// argument is an entry slug, with Attr it matches that attribute.
+// argument is the slug of an entry of a kind the plugin contributes, with
+// Attr it matches that attribute of any entry.
 type ToolTarget struct {
 	Arg  string `json:"arg"`
 	Attr string `json:"attr,omitempty"`

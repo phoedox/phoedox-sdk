@@ -176,7 +176,7 @@
               },
               "target": {
                 "type": "object",
-                "description": "Which entry a control tool acts on, so owners can share single devices and allow AI control per device. arg names the argument; without attr its value is an entry slug, with attr it is matched against that attribute of the entries (e.g. ha_entity).",
+                "description": "Which entry a control tool acts on, so owners can share single devices and allow AI control per device. arg names the argument; without attr its value is the slug of an entry of a kind this plugin contributes, with attr it is matched against that attribute of the entries (e.g. ha_entity).",
                 "required": ["arg"],
                 "additionalProperties": false,
                 "properties": {
