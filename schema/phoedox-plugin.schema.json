@@ -163,6 +163,16 @@
               "input": {
                 "type": "string",
                 "description": "JSON Schema file of the arguments (type object)."
+              },
+              "control": {
+                "type": "boolean",
+                "description": "The tool acts on the physical world (switching, restarting). Only editors may run it; AI clients never run it directly, their calls become suggestions a person confirms."
+              },
+              "timeoutSec": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60,
+                "description": "Time limit of one call in seconds (default 10)."
               }
             }
           }

@@ -56,6 +56,7 @@ func TestManifestRules(t *testing.T) {
 		"bad range": func(m *Manifest) { m.Engines.Phoedox = "latest" },
 		"bad kind":  func(m *Manifest) { m.Contributes.Kinds = []Kind{{ID: "UPS"}} },
 		"bad tool":  func(m *Manifest) { m.Contributes.MCPTools = []MCPTool{{Name: "Run Now"}} },
+		"long tool": func(m *Manifest) { m.Contributes.MCPTools = []MCPTool{{Name: "x", TimeoutSec: 120}} },
 		"bad event": func(m *Manifest) { m.Contributes.Events = []string{"cron:*"} },
 	} {
 		m := base
