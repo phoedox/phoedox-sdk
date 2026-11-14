@@ -173,6 +173,16 @@
                 "minimum": 1,
                 "maximum": 60,
                 "description": "Time limit of one call in seconds (default 10)."
+              },
+              "target": {
+                "type": "object",
+                "description": "Which entry a control tool acts on, so owners can share single devices and allow AI control per device. arg names the argument; without attr its value is an entry slug, with attr it is matched against that attribute of the entries (e.g. ha_entity).",
+                "required": ["arg"],
+                "additionalProperties": false,
+                "properties": {
+                  "arg": { "type": "string", "pattern": "^[a-z_][a-z0-9_]*$" },
+                  "attr": { "type": "string", "pattern": "^[a-z_][a-z0-9_]*$" }
+                }
               }
             }
           }

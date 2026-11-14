@@ -58,6 +58,12 @@ func TestManifestRules(t *testing.T) {
 		"bad tool":  func(m *Manifest) { m.Contributes.MCPTools = []MCPTool{{Name: "Run Now"}} },
 		"long tool": func(m *Manifest) { m.Contributes.MCPTools = []MCPTool{{Name: "x", TimeoutSec: 120}} },
 		"bad event": func(m *Manifest) { m.Contributes.Events = []string{"cron:*"} },
+		"target without control": func(m *Manifest) {
+			m.Contributes.MCPTools = []MCPTool{{Name: "x", Target: &ToolTarget{Arg: "entity_id"}}}
+		},
+		"bad target": func(m *Manifest) {
+			m.Contributes.MCPTools = []MCPTool{{Name: "x", Control: true, Target: &ToolTarget{Arg: "Entity-ID"}}}
+		},
 	} {
 		m := base
 		mod(&m)
@@ -66,6 +72,7 @@ func TestManifestRules(t *testing.T) {
 		}
 	}
 	base.Contributes.Events = []string{"schedule:every=60s", "entity.*"}
+	base.Contributes.MCPTools = []MCPTool{{Name: "x", Control: true, Target: &ToolTarget{Arg: "entity_id", Attr: "ha_entity"}}}
 	if err := base.Validate(); err != nil {
 		t.Fatal(err)
 	}
