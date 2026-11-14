@@ -43,7 +43,8 @@ export interface PluginDef {
   blocks?: BlockDef[];
   /**
    * Element shown on entry pages of a kind: kind -> element tag. Gets the entry slug as attribute `entity`.
-   * Works for the plugin's own kinds and for core kinds (e.g. device); the element renders nothing when the entry is not its business.
+   * Works for the plugin's own kinds and for core kinds (e.g. device); when an entry is not its business the
+   * element sets its `hidden` attribute and the host hides the frame around it.
    */
   views?: Record<string, string>;
   onReady?(sdk: PhoedoxSdk): void | Promise<void>;
