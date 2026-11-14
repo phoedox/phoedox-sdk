@@ -14,7 +14,7 @@ export interface PhoedoxSdk {
   tool<T = unknown>(name: string, input: unknown): Promise<T>;
   ui: { toast(message: string): void };
   commands: { add(cmd: Command): void };
-  /** Lucide icon names, e.g. "battery-charging". */
+  /** Lucide icon names, e.g. "battery-charging"; returns an SVG element that renders in any Lit version. */
   icons: { render(name: string, size?: number): unknown };
 }
 
