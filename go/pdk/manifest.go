@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strings"
+	"unicode/utf8"
 )
 
 // HostAPI is the host API major version this SDK targets.
@@ -14,21 +16,34 @@ const HostAPI = "1"
 
 // Manifest mirrors schema/phoedox-plugin.schema.json.
 type Manifest struct {
-	ID           string      `json:"id"`
-	Name         string      `json:"name"`
-	Version      string      `json:"version"`
-	HostAPI      string      `json:"hostApi"`
-	Engines      Engines     `json:"engines"`
-	Description  string      `json:"description,omitempty"`
-	Backend      *Backend    `json:"backend,omitempty"`
-	Frontend     *Frontend   `json:"frontend,omitempty"`
-	CriticalPath bool        `json:"criticalPath,omitempty"`
-	Contributes  Contributes `json:"contributes,omitempty"`
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Version     string  `json:"version"`
+	HostAPI     string  `json:"hostApi"`
+	Engines     Engines `json:"engines"`
+	Description string  `json:"description,omitempty"`
+	// Icon is a Lucide icon name (kebab-case, e.g. battery-charging) shown in the store and the instance.
+	Icon string `json:"icon,omitempty"`
+	// Screenshots are images in the package (screenshots/…, PNG, JPEG or WebP) shown in the store.
+	Screenshots  []Screenshot `json:"screenshots,omitempty"`
+	Backend      *Backend     `json:"backend,omitempty"`
+	Frontend     *Frontend    `json:"frontend,omitempty"`
+	CriticalPath bool         `json:"criticalPath,omitempty"`
+	Contributes  Contributes  `json:"contributes,omitempty"`
 	// Permissions: net:fetch:<host> for a fixed host, net:fetch:config for
 	// the hosts of the addresses the project owner sets (secrets url, *_url).
 	Permissions []string        `json:"permissions,omitempty"`
 	License     json.RawMessage `json:"license,omitempty"`
 }
+
+// Screenshot is an image of the plugin in use.
+type Screenshot struct {
+	File    string `json:"file"`
+	Caption string `json:"caption,omitempty"`
+}
+
+// MaxScreenshots limits the screenshots of a plugin.
+const MaxScreenshots = 6
 
 type Engines struct {
 	Phoedox string `json:"phoedox"`
@@ -93,6 +108,8 @@ var (
 	kindRe    = regexp.MustCompile(`^[a-z][a-z0-9_]{0,39}$`)
 	toolRe    = regexp.MustCompile(`^[a-z0-9]+([._-][a-z0-9]+)*$`)
 	eventRe   = regexp.MustCompile(`^(\*|[a-z_]+\.(\*|[a-z_]+))$|^schedule:every=\d+(s|m|h)$`)
+	iconRe    = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+	shotRe    = regexp.MustCompile(`^screenshots/[A-Za-z0-9._-]+\.(png|jpe?g|webp)$`)
 	rangeRe   = regexp.MustCompile(`^((>=|<=|>|<|=)?\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?\s*)+$`)
 	maxMemory = 256
 )
@@ -146,6 +163,20 @@ func (m Manifest) Validate() error {
 	}
 	if m.Backend != nil && (m.Backend.MemoryMB < 0 || m.Backend.MemoryMB > maxMemory) {
 		return fmt.Errorf("manifest: backend.memoryMb must be between 1 and %d", maxMemory)
+	}
+	if m.Icon != "" && (len(m.Icon) > 40 || !iconRe.MatchString(m.Icon)) {
+		return fmt.Errorf("manifest: icon %q must be a Lucide name like battery-charging", m.Icon)
+	}
+	if len(m.Screenshots) > MaxScreenshots {
+		return fmt.Errorf("manifest: at most %d screenshots", MaxScreenshots)
+	}
+	for _, sc := range m.Screenshots {
+		if !shotRe.MatchString(sc.File) || strings.Contains(sc.File, "..") {
+			return fmt.Errorf("manifest: screenshot %q must be a PNG, JPEG or WebP file in screenshots/", sc.File)
+		}
+		if utf8.RuneCountInString(sc.Caption) > 140 {
+			return fmt.Errorf("manifest: screenshot caption of %s is longer than 140 characters", sc.File)
+		}
 	}
 	for _, p := range m.Permissions {
 		if !permRe.MatchString(p) {

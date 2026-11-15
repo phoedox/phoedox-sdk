@@ -177,11 +177,19 @@
               "target": {
                 "type": "object",
                 "description": "Which entry a control tool acts on, so owners can share single devices and allow AI control per device. arg names the argument; without attr its value is the slug of an entry of a kind this plugin contributes, with attr it is matched against that attribute of the entries (e.g. ha_entity).",
-                "required": ["arg"],
+                "required": [
+                  "arg"
+                ],
                 "additionalProperties": false,
                 "properties": {
-                  "arg": { "type": "string", "pattern": "^[a-z_][a-z0-9_]*$" },
-                  "attr": { "type": "string", "pattern": "^[a-z_][a-z0-9_]*$" }
+                  "arg": {
+                    "type": "string",
+                    "pattern": "^[a-z_][a-z0-9_]*$"
+                  },
+                  "attr": {
+                    "type": "string",
+                    "pattern": "^[a-z_][a-z0-9_]*$"
+                  }
                 }
               }
             }
@@ -258,6 +266,34 @@
     "description": {
       "type": "string",
       "description": "One or two sentences shown to admins and in the store."
+    },
+    "icon": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 40,
+      "description": "Lucide icon name (kebab-case, e.g. battery-charging), shown in the store and the instance."
+    },
+    "screenshots": {
+      "type": "array",
+      "maxItems": 6,
+      "description": "Images of the plugin in use, stored in the package under screenshots/ (PNG, JPEG or WebP, at most 2 MB each).",
+      "items": {
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "type": "string",
+            "pattern": "^screenshots/[A-Za-z0-9._-]+\\.(png|jpe?g|webp)$"
+          },
+          "caption": {
+            "type": "string",
+            "maxLength": 140
+          }
+        }
+      }
     }
   }
 }

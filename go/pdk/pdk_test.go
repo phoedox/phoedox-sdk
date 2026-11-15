@@ -95,3 +95,22 @@ func TestDecodeResponse(t *testing.T) {
 		t.Fatal(string(b))
 	}
 }
+
+func TestManifestIconAndScreenshots(t *testing.T) {
+	base := `{"id":"de.example.ups","name":"USV","version":"1.0.0","hostApi":"1","engines":{"phoedox":">=1.4.0"}`
+	for _, tc := range []struct {
+		extra string
+		ok    bool
+	}{
+		{`,"icon":"battery-charging","screenshots":[{"file":"screenshots/overview.png","caption":"Übersicht"}]`, true},
+		{`,"icon":"Battery Charging"`, false},
+		{`,"screenshots":[{"file":"../secret.png"}]`, false},
+		{`,"screenshots":[{"file":"screenshots/logo.svg"}]`, false},
+		{`,"screenshots":[{"file":"screenshots/a.png"},{"file":"screenshots/b.png"},{"file":"screenshots/c.png"},{"file":"screenshots/d.png"},{"file":"screenshots/e.png"},{"file":"screenshots/f.png"},{"file":"screenshots/g.png"}]`, false},
+	} {
+		_, err := ParseManifest([]byte(base + tc.extra + `}`))
+		if (err == nil) != tc.ok {
+			t.Errorf("%s: err=%v", tc.extra, err)
+		}
+	}
+}
