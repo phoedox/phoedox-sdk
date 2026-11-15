@@ -5,6 +5,7 @@ Plugin-SDK für Phoedox. Gesamtentscheidungen: in Phoedox (https://app.phoedox.c
 ## Regeln
 
 - **Dokumentation und Aufgaben auf Englisch:** README, `docs/`, Phoedox-Seiten, Entscheidungen (ADRs) und Karten auf dem Board „Roadmap“ immer auf Englisch schreiben; Deutsch nur als Übersetzung (Projekt `phoedox` hat Englisch als Hauptsprache).
+- **Aufgaben aus dem Chat sofort auf die Roadmap:** Was Jan im Chat als Aufgabe oder Wunsch nennt, gleich als Karte auf dem Board „Roadmap“ im Projekt `phoedox` anlegen (vorher `list_tasks` gegen Doppelte), beim Start nach „In progress“ schieben und beim Abschluss nach „Done“.
 - Immer die aktuelle stabile Go-Version und aktuelle Abhängigkeiten verwenden (`go` + `toolchain` in `go.mod`).
 - `schema/phoedox-plugin.schema.json`, `go/pdk/manifest.go` und `js/src/index.ts` beschreiben dasselbe Manifest – immer gemeinsam ändern.
 - `pdk.HostAPI` ist die Hauptversion der Host-API. Neue Host-Funktionen ohne Bruch; Breaking Changes nur mit neuer Hauptversion (Host unterstützt aktuelle + vorige).
