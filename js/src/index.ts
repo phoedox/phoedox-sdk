@@ -16,6 +16,22 @@ export interface PhoedoxSdk {
   commands: { add(cmd: Command): void };
   /** Lucide icon names, e.g. "battery-charging"; returns an SVG element that renders in any Lit version. */
   icons: { render(name: string, size?: number): unknown };
+  /** Cards of a board of the current project, with the reader's rights. */
+  tasks: { list(board: string): Promise<Task[]> };
+  /** Draws a block of this project's plugins on the server (block_render, cleaned SVG). */
+  blocks: { render(kind: string, source: string, width?: number): Promise<{ svg: string; problems: { line: number; message: string; severity: string }[] }> };
+}
+
+/** A card of a board. */
+export interface Task {
+  id: string;
+  title: string;
+  column: string;
+  due?: string;
+  createdAt: string;
+  doneAt?: string | null;
+  boardTitle?: string;
+  labels: string[];
 }
 
 export interface Entity {
