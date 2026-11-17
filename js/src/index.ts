@@ -74,3 +74,27 @@ export function definePlugin(def: PluginDef): PluginDef {
   }
   return def;
 }
+
+/** Item types of the store (manifest `type`). */
+export type ItemType = "plugin" | "theme" | "app";
+
+/**
+ * phoedox-plugin.json (see schema/phoedox-plugin.schema.json and go/pdk). Themes carry theme.json and an
+ * optional theme.css, app templates app.json and files/…; neither has a backend, frontend or permissions.
+ */
+export interface Manifest {
+  type?: ItemType;
+  id: string;
+  name: string;
+  version: string;
+  /** Required for plugins. */
+  hostApi?: string;
+  engines: { phoedox: string };
+  description?: string;
+  icon?: string;
+  screenshots?: { file: string; caption?: string }[];
+  backend?: { wasm: string; memoryMb?: number };
+  frontend?: { module: string };
+  permissions?: string[];
+  criticalPath?: boolean;
+}

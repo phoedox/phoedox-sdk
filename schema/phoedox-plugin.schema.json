@@ -1,16 +1,25 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://phoedox.com/schema/phoedox-plugin.json",
-  "title": "Phoedox plugin manifest",
+  "title": "Phoedox store item manifest (plugin, theme or app template)",
   "type": "object",
   "required": [
     "id",
     "name",
     "version",
-    "hostApi",
     "engines"
   ],
   "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "plugin",
+        "theme",
+        "app"
+      ],
+      "default": "plugin",
+      "description": "plugin (default) extends Phoedox; theme carries theme.json and an optional theme.css; app is an app template with app.json and files/\u2026. Themes and app templates have no backend, frontend or permissions."
+    },
     "id": {
       "type": "string",
       "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
@@ -295,5 +304,44 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "plugin"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "hostApi"
+        ]
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "properties": {
+            "type": {
+              "const": "plugin"
+            }
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "backend": false,
+          "frontend": false,
+          "permissions": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
 }

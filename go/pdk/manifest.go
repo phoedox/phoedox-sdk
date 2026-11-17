@@ -14,8 +14,17 @@ import (
 // HostAPI is the host API major version this SDK targets.
 const HostAPI = "1"
 
+// Item types of the store (manifest "type").
+const (
+	TypePlugin = "plugin"
+	TypeTheme  = "theme" // theme.json + optional theme.css
+	TypeApp    = "app"   // app template: app.json + files/…
+)
+
 // Manifest mirrors schema/phoedox-plugin.schema.json.
 type Manifest struct {
+	// Type is plugin (default), theme or app.
+	Type        string  `json:"type,omitempty"`
 	ID          string  `json:"id"`
 	Name        string  `json:"name"`
 	Version     string  `json:"version"`
@@ -114,6 +123,14 @@ var (
 	maxMemory = 256
 )
 
+// Kind is the item type (plugin when not set).
+func (m Manifest) Kind() string {
+	if m.Type == "" {
+		return TypePlugin
+	}
+	return m.Type
+}
+
 // ParseManifest decodes and validates a manifest.
 func ParseManifest(data []byte) (Manifest, error) {
 	var m Manifest
@@ -132,8 +149,12 @@ func (m Manifest) Validate() error {
 		return fmt.Errorf("manifest: name is required")
 	case !semverRe.MatchString(m.Version):
 		return fmt.Errorf("manifest: version %q is not SemVer", m.Version)
-	case m.HostAPI == "":
+	case m.Kind() == TypePlugin && m.HostAPI == "":
 		return fmt.Errorf("manifest: hostApi is required")
+	case m.Kind() != TypePlugin && m.Kind() != TypeTheme && m.Kind() != TypeApp:
+		return fmt.Errorf("manifest: type %q must be plugin, theme or app", m.Type)
+	case m.Kind() != TypePlugin && (m.Backend != nil || m.Frontend != nil || len(m.Permissions) > 0):
+		return fmt.Errorf("manifest: themes and app templates have no backend, frontend or permissions")
 	case m.Engines.Phoedox == "":
 		return fmt.Errorf("manifest: engines.phoedox is required")
 	}
