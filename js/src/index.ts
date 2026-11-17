@@ -20,7 +20,8 @@ export interface PhoedoxSdk {
   /** Runs a tool of this plugin's backend in the current project with the user's rights. */
   tool<T = unknown>(name: string, input: unknown): Promise<T>;
   ui: {
-    toast(message: string): void;
+    /** A short message; "error" shows it as a failure. */
+    toast(message: string, kind?: "info" | "error"): void;
     /** The language of the interface ("de", "en", …), for the plugin's own texts. */
     locale(): string;
     /** Opens a page of the current project in the app, e.g. "d/<slug>" or "e/<entry>". */
