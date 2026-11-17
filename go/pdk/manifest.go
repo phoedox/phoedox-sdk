@@ -91,8 +91,19 @@ type Block struct {
 	Element string `json:"element,omitempty"`
 	// Board: the block may be placed on whiteboards.
 	Board bool `json:"board,omitempty"`
+	// Live: on whiteboards the element runs interactively (e.g. a poll),
+	// not only its picture. Needs Board and Element.
+	Live bool `json:"live,omitempty"`
+	// Size is the block's size when it is placed on a whiteboard.
+	Size *BlockSize `json:"size,omitempty"`
 	// Example is a source to start from (slash command, whiteboard tool).
 	Example string `json:"example,omitempty"`
+}
+
+// BlockSize is a width and height on a whiteboard (80–2000 each).
+type BlockSize struct {
+	W int `json:"w"`
+	H int `json:"h"`
 }
 
 type Kind struct {
@@ -216,6 +227,10 @@ func (m Manifest) Validate() error {
 			return fmt.Errorf("manifest: block %s: icon %q must be a Lucide name", b.ID, b.Icon)
 		case len(b.Example) > 4096:
 			return fmt.Errorf("manifest: block %s: example longer than 4096 bytes", b.ID)
+		case b.Live && (!b.Board || b.Element == ""):
+			return fmt.Errorf("manifest: block %s: live needs board and an element", b.ID)
+		case b.Size != nil && (b.Size.W < 80 || b.Size.W > 2000 || b.Size.H < 80 || b.Size.H > 2000):
+			return fmt.Errorf("manifest: block %s: size must be 80–2000 wide and high", b.ID)
 		}
 	}
 	for _, e := range m.Contributes.Events {

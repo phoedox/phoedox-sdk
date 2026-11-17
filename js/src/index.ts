@@ -38,7 +38,14 @@ export interface PhoedoxSdk {
   /** Cards of a board of the current project, with the reader's rights. */
   tasks: { list(board: string): Promise<Task[]> };
   /** Draws a block of this project's plugins on the server (block_render, cleaned SVG). */
-  blocks: { render(kind: string, source: string, width?: number): Promise<{ svg: string; problems: { line: number; message: string; severity: string }[] }> };
+  blocks: {
+    render(kind: string, source: string, width?: number): Promise<{ svg: string; problems: { line: number; message: string; severity: string }[] }>;
+    /**
+     * The reader's state of a block on a page or whiteboard (a JSON object up to 16 KB; null removes it).
+     * Signed-in readers keep it on the server; elsewhere (no doc) it stays in the browser.
+     */
+    state<T = unknown>(ref: { doc: string; key: string }): { get(): Promise<BlockState<T>>; put(data: T | null): Promise<BlockState<T>> };
+  };
 }
 
 /** A card of a board. */
@@ -85,6 +92,21 @@ export interface BlockElement {
   source: string;
   svg: string;
   project: string;
+  /** The page or whiteboard the block is on ("" in previews). */
+  doc: string;
+  /**
+   * The key of the block's state: the whiteboard element's id, else a hash of the
+   * trimmed source. A plugin may use its own id from the source instead (1–40 of A–Z a–z 0–9 -).
+   */
+  stateKey: string;
+}
+
+/** A reader's saved state of a block and, for polls (state `{choices: [...]}`), the votes of all readers. */
+export interface BlockState<T = unknown> {
+  mine: T | null;
+  /** choice → number of readers who chose it (never who). */
+  votes?: Record<string, number>;
+  voters?: number;
 }
 
 export interface PluginDef {
@@ -169,6 +191,10 @@ export interface ManifestBlock {
   element?: string;
   /** May be placed on whiteboards. */
   board?: boolean;
+  /** On whiteboards the element runs interactively (e.g. a poll); needs board and element. */
+  live?: boolean;
+  /** Size on a whiteboard (80–2000 each). */
+  size?: { w: number; h: number };
   /** A source to start from. */
   example?: string;
 }

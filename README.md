@@ -48,7 +48,18 @@ removes scripts, event handlers and outside links) and the problems check AI wri
 the CSS variables `--fg`, `--muted`, `--line`, `--surface`, `--tc-<colour>` and
 `--tb-<colour>` so the picture follows light and dark mode. The optional `element` of the
 frontend makes the block interactive in the web app and, in a WebView, in the mobile app;
-the host sets its `source`, `svg` and `project` properties.
+the host sets its `source`, `svg`, `project`, `doc` and `stateKey` properties.
+
+**State per reader** (votes, answers, ticked steps): the element keeps it with
+`sdk.blocks.state({ doc, key: stateKey }).get()` / `.put(data)` – a JSON object up to 16 KB per
+reader, page and block. A state `{ "choices": [...] }` is counted for all readers (`votes`,
+`voters`; never who). `stateKey` is the whiteboard element's id or a hash of the trimmed source,
+the same keys the built-in blocks used, so state survives a block's move into a plugin; a
+plugin may use its own `id:` from the source instead.
+
+**On whiteboards:** `"board": true` lets people place the block, `"size": { "w": 520, "h": 260 }`
+sets its first size, and `"live": true` runs the element there instead of only the picture
+(polls, for example).
 
 ## Publishing to the store
 

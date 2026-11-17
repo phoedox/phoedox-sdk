@@ -167,11 +167,36 @@
               "element": {
                 "type": "string",
                 "pattern": "^phx-[a-z0-9]+(-[a-z0-9]+)*$",
-                "description": "Frontend element that shows the block interactively (gets source, svg and project)."
+                "description": "Frontend element that shows the block interactively (gets source, svg, project, doc and stateKey)."
               },
               "board": {
                 "type": "boolean",
                 "description": "May be placed on whiteboards."
+              },
+              "live": {
+                "type": "boolean",
+                "description": "On whiteboards the element runs interactively (e.g. a poll), not only the picture. Needs board and element."
+              },
+              "size": {
+                "type": "object",
+                "required": [
+                  "w",
+                  "h"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "w": {
+                    "type": "integer",
+                    "minimum": 80,
+                    "maximum": 2000
+                  },
+                  "h": {
+                    "type": "integer",
+                    "minimum": 80,
+                    "maximum": 2000
+                  }
+                },
+                "description": "Size on a whiteboard."
               },
               "example": {
                 "type": "string",
