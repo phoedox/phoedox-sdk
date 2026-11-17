@@ -1,0 +1,54 @@
+name: Publish to the Phoedox store
+description: Pack a Phoedox plugin, theme or app template and submit it to the store for review (trusted publishing with the workflow's ID token, or an upload token).
+branding:
+  icon: upload-cloud
+  color: orange
+inputs:
+  path:
+    description: Folder with phoedox-plugin.json
+    default: .
+  channel:
+    description: stable or beta (versions like 1.2.0-beta.1 go to beta anyway)
+    default: stable
+  store-url:
+    description: Store address
+    default: https://store.phoedox.com
+  audience:
+    description: Audience of the GitHub ID token (default the store's host)
+    default: ""
+  upload-token:
+    description: Upload or author token; leave empty to use trusted publishing (needs permissions id-token write)
+    default: ""
+  author-key:
+    description: Optional author key (keyId:base64) for the author signature
+    default: ""
+  sdk-version:
+    description: Version of phx-plugin to install
+    default: latest
+outputs:
+  package:
+    description: Path of the built package
+    value: ${{ steps.pack.outputs.package }}
+runs:
+  using: composite
+  steps:
+    - name: Install phx-plugin
+      shell: bash
+      run: go install github.com/phoedox/phoedox-sdk/go/cmd/phx-plugin@${{ inputs.sdk-version }}
+    - name: Pack
+      id: pack
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: |
+        pkg=$(phx-plugin pack . -o "$RUNNER_TEMP/phoedox-dist")
+        echo "package=$pkg" >> "$GITHUB_OUTPUT"
+    - name: Publish
+      shell: bash
+      env:
+        PHOEDOX_STORE_TOKEN: ${{ inputs.upload-token }}
+        PHOEDOX_AUTHOR_KEY: ${{ inputs.author-key }}
+      run: |
+        args=(-store "${{ inputs.store-url }}")
+        [ "${{ inputs.channel }}" = "beta" ] && args+=(-beta)
+        [ -n "${{ inputs.audience }}" ] && args+=(-audience "${{ inputs.audience }}")
+        phx-plugin publish "${{ steps.pack.outputs.package }}" "${args[@]}"
