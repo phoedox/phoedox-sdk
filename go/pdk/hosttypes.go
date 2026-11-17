@@ -84,6 +84,36 @@ type ToolCall struct {
 	Project string          `json:"project"`
 }
 
+// BlockRender is what block_render receives: the kind and source of a
+// fenced block (ADR-0086).
+type BlockRender struct {
+	Kind    string `json:"kind"`
+	Source  string `json:"source"`
+	Project string `json:"project"`
+	// Locale is the reader's language (de, en …) for dates and numbers.
+	Locale string `json:"locale,omitempty"`
+	// Width is a hint in pixels; the SVG should scale (viewBox).
+	Width int `json:"width,omitempty"`
+}
+
+// BlockProblem is a finding in a block's source; Line counts from 1.
+type BlockProblem struct {
+	Line    int    `json:"line,omitempty"`
+	Message string `json:"message"`
+	// Severity is "error" (the block cannot be drawn) or "warning".
+	Severity string `json:"severity,omitempty"`
+}
+
+// BlockResult is what block_render returns: an SVG picture (drawn with
+// currentColor and the CSS variables --fg, --muted, --line, --surface,
+// --tc-<colour>, --tb-<colour> so it follows light and dark mode) and the
+// problems of the source. Scripts, event handlers and outside links are
+// removed by the host.
+type BlockResult struct {
+	SVG      string         `json:"svg"`
+	Problems []BlockProblem `json:"problems,omitempty"`
+}
+
 // HostError is an error the host returned. Code is one of denied (not in
 // the manifest), forbidden (the user lacks the role), not_found, invalid,
 // conflict, quota, failed.

@@ -93,6 +93,25 @@ func HandleTool(fn func(ToolCall) (any, error)) int32 {
 	return 0
 }
 
+// HandleBlockRender runs fn for block_render (plugin blocks, ADR-0086):
+//
+//	//go:wasmexport block_render
+//	func blockRender() int32 { return pdk.HandleBlockRender(render) }
+func HandleBlockRender(fn func(BlockRender) (BlockResult, error)) int32 {
+	in, err := Input[BlockRender]()
+	var out BlockResult
+	if err == nil {
+		out, err = fn(in)
+	}
+	if err == nil {
+		err = Output(out)
+	}
+	if err != nil {
+		return Fail(err)
+	}
+	return 0
+}
+
 // Secret reads a secret the project owner set (needs secrets:<name>).
 func Secret(name string) (string, error) {
 	var v string

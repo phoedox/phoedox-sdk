@@ -24,6 +24,32 @@ phx-plugin pack plugins/ups -o dist      # checks the manifest, builds backend (
 and frontend module, and `schemas/`, `screenshots/`, `files/`, `theme.json`, `theme.css`, `app.json`
 when they exist. Without the CLI: `GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared -o backend.wasm ./backend`.
 
+## Content blocks (ADR-0086)
+
+A plugin can add a block kind for pages: a fenced block whose info string is the block's id
+(```` ```gantt ````). Declare it in the manifest:
+
+```json
+"contributes": { "blocks": [{ "id": "gantt", "label": "Schedule", "icon": "chart-gantt",
+  "element": "phx-gantt", "board": true, "example": "Task: 2026-03-01, 2w" }] }
+```
+
+The backend draws it – it must export `block_render`:
+
+```go
+//go:wasmexport block_render
+func blockRender() int32 { return pdk.HandleBlockRender(render) }
+
+func render(in pdk.BlockRender) (pdk.BlockResult, error) { … } // SVG + problems
+```
+
+The SVG is shown everywhere (web app, mobile app, published pages, whiteboards; the host
+removes scripts, event handlers and outside links) and the problems check AI writes. Use
+the CSS variables `--fg`, `--muted`, `--line`, `--surface`, `--tc-<colour>` and
+`--tb-<colour>` so the picture follows light and dark mode. The optional `element` of the
+frontend makes the block interactive in the web app and, in a WebView, in the mobile app;
+the host sets its `source`, `svg` and `project` properties.
+
 ## Publishing to the store
 
 Every upload goes into the store's review queue; nothing is published without a moderator (ADR-0074).

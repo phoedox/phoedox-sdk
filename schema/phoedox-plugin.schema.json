@@ -18,7 +18,7 @@
         "app"
       ],
       "default": "plugin",
-      "description": "plugin (default) extends Phoedox; theme carries theme.json and an optional theme.css; app is an app template with app.json and files/\u2026. Themes and app templates have no backend, frontend or permissions."
+      "description": "plugin (default) extends Phoedox; theme carries theme.json and an optional theme.css; app is an app template with app.json and files/…. Themes and app templates have no backend, frontend or permissions."
     },
     "id": {
       "type": "string",
@@ -149,10 +149,38 @@
             "type": "object",
             "required": [
               "id",
-              "label",
-              "element"
-            ]
-          }
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]{1,29}$"
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 60
+              },
+              "icon": {
+                "type": "string",
+                "description": "Lucide icon name"
+              },
+              "element": {
+                "type": "string",
+                "pattern": "^phx-[a-z0-9]+(-[a-z0-9]+)*$",
+                "description": "Frontend element that shows the block interactively (gets source, svg and project)."
+              },
+              "board": {
+                "type": "boolean",
+                "description": "May be placed on whiteboards."
+              },
+              "example": {
+                "type": "string",
+                "maxLength": 4096,
+                "description": "A source to start from."
+              }
+            }
+          },
+          "description": "Content blocks for pages (ADR-0086): a fenced block whose info string is the id. The backend export block_render draws it as SVG (shown everywhere); an optional frontend element makes it interactive."
         },
         "mcpTools": {
           "type": "array",

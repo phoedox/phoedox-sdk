@@ -72,6 +72,27 @@ type Contributes struct {
 	Relations []Relation `json:"relations,omitempty"`
 	MCPTools  []MCPTool  `json:"mcpTools,omitempty"`
 	Events    []string   `json:"events,omitempty"`
+	// Blocks are content blocks for pages (ADR-0086): a fenced block whose
+	// info string is the block's id. The backend draws it (export
+	// block_render → SVG and problems), so it shows in the web app, the
+	// mobile app, published pages and on whiteboards; an optional frontend
+	// element makes it interactive in the web app and the mobile app.
+	Blocks []Block `json:"blocks,omitempty"`
+}
+
+// Block is a content block kind a plugin adds.
+type Block struct {
+	ID    string `json:"id"`
+	Label string `json:"label"`
+	// Icon is a Lucide name for menus.
+	Icon string `json:"icon,omitempty"`
+	// Element is the frontend element (phx-<name>) that shows the block
+	// interactively; without it the backend's picture is shown.
+	Element string `json:"element,omitempty"`
+	// Board: the block may be placed on whiteboards.
+	Board bool `json:"board,omitempty"`
+	// Example is a source to start from (slash command, whiteboard tool).
+	Example string `json:"example,omitempty"`
 }
 
 type Kind struct {
@@ -119,6 +140,8 @@ var (
 	eventRe   = regexp.MustCompile(`^(\*|[a-z_]+\.(\*|[a-z_]+))$|^schedule:every=\d+(s|m|h)$`)
 	iconRe    = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 	shotRe    = regexp.MustCompile(`^screenshots/[A-Za-z0-9._-]+\.(png|jpe?g|webp)$`)
+	blockRe   = regexp.MustCompile(`^[a-z][a-z0-9]{1,29}$`)
+	elementRe = regexp.MustCompile(`^phx-[a-z0-9]+(-[a-z0-9]+)*$`)
 	rangeRe   = regexp.MustCompile(`^((>=|<=|>|<|=)?\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?\s*)+$`)
 	maxMemory = 256
 )
@@ -175,6 +198,24 @@ func (m Manifest) Validate() error {
 		}
 		if t.Target != nil && (!argRe.MatchString(t.Target.Arg) || (t.Target.Attr != "" && !argRe.MatchString(t.Target.Attr)) || !t.Control) {
 			return fmt.Errorf("manifest: tool %s: target needs control and arg/attr of lowercase letters, digits and _", t.Name)
+		}
+	}
+	for _, b := range m.Contributes.Blocks {
+		switch {
+		case !blockRe.MatchString(b.ID):
+			return fmt.Errorf("manifest: block %q must be 2–30 lowercase letters and digits", b.ID)
+		case strings.TrimSpace(b.Label) == "" || utf8.RuneCountInString(b.Label) > 60:
+			return fmt.Errorf("manifest: block %s needs a label of at most 60 characters", b.ID)
+		case b.Element != "" && !elementRe.MatchString(b.Element):
+			return fmt.Errorf("manifest: block %s: element %q must be phx-<name>", b.ID, b.Element)
+		case b.Element != "" && m.Frontend == nil:
+			return fmt.Errorf("manifest: block %s has an element but the plugin has no frontend", b.ID)
+		case m.Backend == nil:
+			return fmt.Errorf("manifest: block %s needs a backend that exports block_render", b.ID)
+		case b.Icon != "" && (len(b.Icon) > 40 || !iconRe.MatchString(b.Icon)):
+			return fmt.Errorf("manifest: block %s: icon %q must be a Lucide name", b.ID, b.Icon)
+		case len(b.Example) > 4096:
+			return fmt.Errorf("manifest: block %s: example longer than 4096 bytes", b.ID)
 		}
 	}
 	for _, e := range m.Contributes.Events {
