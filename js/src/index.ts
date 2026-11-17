@@ -32,10 +32,24 @@ export interface Command {
   run(): void | Promise<void>;
 }
 
+/**
+ * A content block's interactive element (ADR-0086). The manifest declares the block
+ * (`contributes.blocks`); the backend export `block_render` draws it as SVG everywhere.
+ * Where the frontend runs (web app, and the mobile app in a WebView), the host creates
+ * `element` instead and sets `source` (the block's text), `svg` (the backend's picture,
+ * a good first paint) and `project` before connecting it.
+ */
 export interface BlockDef {
   id: string;
   element: string;
   icon?: string;
+}
+
+/** The properties the host sets on a block element. */
+export interface BlockElement {
+  source: string;
+  svg: string;
+  project: string;
 }
 
 export interface PluginDef {
@@ -97,4 +111,29 @@ export interface Manifest {
   frontend?: { module: string };
   permissions?: string[];
   criticalPath?: boolean;
+  contributes?: Contributes;
+}
+
+/** What a plugin adds to Phoedox (manifest `contributes`). */
+export interface Contributes {
+  kinds?: { id: string; schema?: string; icon?: string }[];
+  relations?: { id: string; from: string[]; to: string[]; card?: string }[];
+  mcpTools?: { name: string; description?: string; input?: string; control?: boolean; timeoutSec?: number; target?: { arg: string; attr?: string } }[];
+  events?: string[];
+  /** Content blocks for pages; the backend must export block_render. */
+  blocks?: ManifestBlock[];
+}
+
+export interface ManifestBlock {
+  /** The fenced block's info string: 2–30 lowercase letters and digits. */
+  id: string;
+  label: string;
+  /** Lucide icon name. */
+  icon?: string;
+  /** phx-<name> element of the frontend that shows the block interactively. */
+  element?: string;
+  /** May be placed on whiteboards. */
+  board?: boolean;
+  /** A source to start from. */
+  example?: string;
 }
