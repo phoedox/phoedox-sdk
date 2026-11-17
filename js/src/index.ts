@@ -9,10 +9,28 @@ export interface PhoedoxSdk {
     /** Calls cb now and whenever the entry changes (polling while the page is visible). */
     watch(id: string, cb: (e: Entity) => void): () => void;
   };
-  docs: { create(type: string, title?: string): Promise<{ id: string }> };
+  docs: {
+    /**
+     * Creates a document in the current project with the user's rights. `content` adds the
+     * fields of the documents API, e.g. `{ markdown }` or, for decisions (type "adr"),
+     * `{ adr: { status: "proposed", context, options: [{ title, description }] } }`.
+     */
+    create(type: string, title?: string, content?: Record<string, unknown>): Promise<{ id: string; slug: string }>;
+  };
   /** Runs a tool of this plugin's backend in the current project with the user's rights. */
   tool<T = unknown>(name: string, input: unknown): Promise<T>;
-  ui: { toast(message: string): void };
+  ui: {
+    toast(message: string): void;
+    /** The language of the interface ("de", "en", …), for the plugin's own texts. */
+    locale(): string;
+    /** Opens a page of the current project in the app, e.g. "d/<slug>" or "e/<entry>". */
+    open(path: string): void;
+    /**
+     * Copies whiteboard elements (the format of save_whiteboard: shapes, texts, arrows …)
+     * so that the user can paste them onto a whiteboard.
+     */
+    copyToWhiteboard(elements: unknown[]): Promise<void>;
+  };
   commands: { add(cmd: Command): void };
   /** Lucide icon names, e.g. "battery-charging"; returns an SVG element that renders in any Lit version. */
   icons: { render(name: string, size?: number): unknown };
