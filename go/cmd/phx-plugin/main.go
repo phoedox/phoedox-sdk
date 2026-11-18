@@ -182,6 +182,19 @@ func Pack(dir, outDir string, build bool) (string, error) {
 			return "", err
 		}
 	}
+	for _, l := range []string{m.Logo, m.LogoDark} {
+		if l == "" {
+			continue
+		}
+		b, err := os.ReadFile(filepath.Join(dir, l))
+		if err != nil {
+			return "", fmt.Errorf("logo %s: %w", l, err)
+		}
+		if err := pdk.CheckSVG(b); err != nil {
+			return "", fmt.Errorf("%s: %w", l, err)
+		}
+		files[l] = b
+	}
 	data, err := tarGz(files)
 	if err != nil {
 		return "", err

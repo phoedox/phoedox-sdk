@@ -1,6 +1,8 @@
 package main
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/base64"
@@ -11,6 +13,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -47,6 +50,22 @@ func TestPackSignPublish(t *testing.T) {
 	_ = os.WriteFile(filepath.Join(bad, "phoedox-plugin.json"), []byte(`{"id":"x","name":"X","version":"1"}`), 0o644)
 	if _, err := Pack(bad, t.TempDir(), true); err == nil {
 		t.Fatal("invalid manifest packed")
+	}
+
+	// Logos are packed after the SVG check; a logo with a script is refused.
+	logo := t.TempDir()
+	_ = os.WriteFile(filepath.Join(logo, "phoedox-plugin.json"), []byte(`{"type":"theme","id":"de.example.logo","name":"Logo","version":"1.0.0","engines":{"phoedox":">=1.0.0"},"category":"home","logo":"logo.svg"}`), 0o644)
+	_ = os.WriteFile(filepath.Join(logo, "logo.svg"), []byte(`<svg xmlns="http://www.w3.org/2000/svg"><circle r="4"/></svg>`), 0o644)
+	p3, err := Pack(logo, t.TempDir(), true)
+	if err != nil {
+		t.Fatalf("logo: %v", err)
+	}
+	if names := packageNames(t, p3); !slices.Contains(names, "logo.svg") {
+		t.Fatalf("logo not in the package: %v", names)
+	}
+	_ = os.WriteFile(filepath.Join(logo, "logo.svg"), []byte(`<svg onload="alert(1)"/>`), 0o644)
+	if _, err := Pack(logo, t.TempDir(), true); err == nil || !strings.Contains(err.Error(), "event handler") {
+		t.Fatalf("unsafe logo packed: %v", err)
 	}
 
 	// Signature verifies against the public key.
@@ -105,4 +124,22 @@ func TestGitHubIDToken(t *testing.T) {
 	if _, err := githubIDToken(srv.Client(), "x"); err == nil {
 		t.Fatal("outside GitHub Actions there is no ID token")
 	}
+}
+
+func packageNames(t *testing.T, p string) []string {
+	f, err := os.Open(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	zr, err := gzip.NewReader(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	tr := tar.NewReader(zr)
+	for h, err := tr.Next(); err == nil; h, err = tr.Next() {
+		names = append(names, h.Name)
+	}
+	return names
 }

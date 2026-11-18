@@ -162,7 +162,14 @@ export interface Manifest {
   hostApi?: string;
   engines: { phoedox: string };
   description?: string;
+  /** Lucide icon name; with category it makes the plugin's tile. */
   icon?: string;
+  /** Store section and tile colour (default other). */
+  category?: Category;
+  /** SVG at the package root shown instead of the tile (the product's own logo where its brand allows it). */
+  logo?: string;
+  /** Variant of logo for dark backgrounds. */
+  logoDark?: string;
   screenshots?: { file: string; caption?: string }[];
   backend?: { wasm: string; memoryMb?: number };
   frontend?: { module: string };
@@ -170,6 +177,10 @@ export interface Manifest {
   criticalPath?: boolean;
   contributes?: Contributes;
 }
+
+/** Store categories (manifest `category`); each has a tile colour. */
+export const categories = ["home", "network", "servers", "cloud", "monitoring", "development", "records", "blocks", "other"] as const;
+export type Category = (typeof categories)[number];
 
 /** What a plugin adds to Phoedox (manifest `contributes`). */
 export interface Contributes {

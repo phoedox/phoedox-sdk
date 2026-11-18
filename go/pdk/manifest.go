@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode/utf8"
 )
@@ -31,8 +32,17 @@ type Manifest struct {
 	HostAPI     string  `json:"hostApi"`
 	Engines     Engines `json:"engines"`
 	Description string  `json:"description,omitempty"`
-	// Icon is a Lucide icon name (kebab-case, e.g. battery-charging) shown in the store and the instance.
+	// Icon is a Lucide icon name (kebab-case, e.g. battery-charging). With
+	// the category it makes the plugin's tile in the store and the instance.
 	Icon string `json:"icon,omitempty"`
+	// Category picks the tile colour and the store section (Categories);
+	// empty means other.
+	Category string `json:"category,omitempty"`
+	// Logo is an SVG file at the package root (e.g. logo.svg) shown instead
+	// of the tile: the product's own logo where its brand guidelines allow
+	// it (ADR-0090). LogoDark is the variant for dark backgrounds.
+	Logo     string `json:"logo,omitempty"`
+	LogoDark string `json:"logoDark,omitempty"`
 	// Screenshots are images in the package (screenshots/…, PNG, JPEG or WebP) shown in the store.
 	Screenshots  []Screenshot `json:"screenshots,omitempty"`
 	Backend      *Backend     `json:"backend,omitempty"`
@@ -53,6 +63,9 @@ type Screenshot struct {
 
 // MaxScreenshots limits the screenshots of a plugin.
 const MaxScreenshots = 6
+
+// Categories of the store (manifest "category"); each has a colour.
+var Categories = []string{"home", "network", "servers", "cloud", "monitoring", "development", "records", "blocks", "other"}
 
 type Engines struct {
 	Phoedox string `json:"phoedox"`
@@ -151,6 +164,7 @@ var (
 	eventRe   = regexp.MustCompile(`^(\*|[a-z_]+\.(\*|[a-z_]+))$|^schedule:every=\d+(s|m|h)$`)
 	iconRe    = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 	shotRe    = regexp.MustCompile(`^screenshots/[A-Za-z0-9._-]+\.(png|jpe?g|webp)$`)
+	logoRe    = regexp.MustCompile(`^[A-Za-z0-9_-][A-Za-z0-9._-]*\.svg$`)
 	blockRe   = regexp.MustCompile(`^[a-z][a-z0-9]{1,29}$`)
 	elementRe = regexp.MustCompile(`^phx-[a-z0-9]+(-[a-z0-9]+)*$`)
 	rangeRe   = regexp.MustCompile(`^((>=|<=|>|<|=)?\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?\s*)+$`)
@@ -243,6 +257,17 @@ func (m Manifest) Validate() error {
 	}
 	if m.Icon != "" && (len(m.Icon) > 40 || !iconRe.MatchString(m.Icon)) {
 		return fmt.Errorf("manifest: icon %q must be a Lucide name like battery-charging", m.Icon)
+	}
+	if m.Category != "" && !slices.Contains(Categories, m.Category) {
+		return fmt.Errorf("manifest: category %q must be one of %s", m.Category, strings.Join(Categories, ", "))
+	}
+	for _, l := range []string{m.Logo, m.LogoDark} {
+		if l != "" && !logoRe.MatchString(l) {
+			return fmt.Errorf("manifest: logo %q must be an SVG file at the package root, like logo.svg", l)
+		}
+	}
+	if m.LogoDark != "" && m.Logo == "" {
+		return fmt.Errorf("manifest: logoDark needs logo")
 	}
 	if len(m.Screenshots) > MaxScreenshots {
 		return fmt.Errorf("manifest: at most %d screenshots", MaxScreenshots)

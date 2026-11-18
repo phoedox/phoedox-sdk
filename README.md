@@ -22,7 +22,22 @@ phx-plugin pack plugins/ups -o dist      # checks the manifest, builds backend (
 
 `pack` writes a reproducible `dist/<id>-<version>.phxp` with the manifest, the built `backend.wasm`
 and frontend module, and `schemas/`, `screenshots/`, `files/`, `theme.json`, `theme.css`, `app.json`
-when they exist. Without the CLI: `GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared -o backend.wasm ./backend`.
+when they exist, and the logo files the manifest names. Without the CLI: `GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared -o backend.wasm ./backend`.
+
+## Tile, logo and screenshots (ADR-0090)
+
+The store and the instance draw a plugin's **tile** from `icon` (a Lucide name) and `category`
+(`home`, `network`, `servers`, `cloud`, `monitoring`, `development`, `records`, `blocks`, `other`),
+which sets its colour and store section.
+
+A plugin for a third-party product may add that product's own **logo** where the brand's guidelines
+allow it: `"logo": "logo.svg"` and optionally `"logoDark": "logo-dark.svg"` at the package root. The
+SVG must be static (no scripts, event handlers, animation, embedded images or references outside the
+file) and at most 64 KB; `pack` runs the same check as the store (`pdk.CheckSVG`). The product is
+still named in words, the logo must not suggest endorsement, and moderators can remove it – the tile
+shows then.
+
+Screenshots (`screenshots/*.png|jpg|webp`, up to 6, 2 MB each) show the plugin in use, 16:10.
 
 ## Content blocks (ADR-0086)
 

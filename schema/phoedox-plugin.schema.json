@@ -333,7 +333,32 @@
       "type": "string",
       "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
       "maxLength": 40,
-      "description": "Lucide icon name (kebab-case, e.g. battery-charging), shown in the store and the instance."
+      "description": "Lucide icon name (kebab-case, e.g. battery-charging). With category it makes the plugin's tile in the store and the instance."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "home",
+        "network",
+        "servers",
+        "cloud",
+        "monitoring",
+        "development",
+        "records",
+        "blocks",
+        "other"
+      ],
+      "description": "Store section and tile colour: home (smart home), network, servers (servers & storage), cloud (cloud & identity), monitoring, development, records (records & compliance), blocks (page blocks), other (default)."
+    },
+    "logo": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-][A-Za-z0-9._-]*\\.svg$",
+      "description": "SVG file at the package root (e.g. logo.svg, at most 64 KB, static: no scripts, no external references), shown instead of the tile. Only the product's own logo where its brand guidelines allow it (ADR-0090); the author confirms the right to use it."
+    },
+    "logoDark": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-][A-Za-z0-9._-]*\\.svg$",
+      "description": "Variant of logo for dark backgrounds; without it the logo gets a light plate in dark mode."
     },
     "screenshots": {
       "type": "array",
