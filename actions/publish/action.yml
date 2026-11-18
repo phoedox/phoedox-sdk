@@ -22,6 +22,9 @@ inputs:
   author-key:
     description: Optional author key (keyId:base64) for the author signature
     default: ""
+  logo-rights:
+    description: "true confirms that the brand allows you to use the logo in the package (ADR-0090); needed when the manifest names a logo"
+    default: "false"
   sdk-version:
     description: Version of phx-plugin to install
     default: latest
@@ -50,5 +53,6 @@ runs:
       run: |
         args=(-store "${{ inputs.store-url }}")
         [ "${{ inputs.channel }}" = "beta" ] && args+=(-beta)
+        [ "${{ inputs.logo-rights }}" = "true" ] && args+=(-logo-rights)
         [ -n "${{ inputs.audience }}" ] && args+=(-audience "${{ inputs.audience }}")
         phx-plugin publish "${{ steps.pack.outputs.package }}" "${args[@]}"

@@ -382,11 +382,20 @@ var hints = map[string]string{
 }
 
 // Publish uploads a package and returns the store's answer.
-func Publish(hc *http.Client, store string, data []byte, token, signature string, beta bool) (Result, error) {
+// logoRights confirms that the author may use the logo in the package
+// (ADR-0090); the store refuses packages with a logo without it.
+func Publish(hc *http.Client, store string, data []byte, token, signature string, beta, logoRights bool) (Result, error) {
 	var res Result
 	u := strings.TrimRight(store, "/") + "/api/v1/plugins"
+	q := url.Values{}
 	if beta {
-		u += "?channel=beta"
+		q.Set("channel", "beta")
+	}
+	if logoRights {
+		q.Set("logoRights", "true")
+	}
+	if len(q) > 0 {
+		u += "?" + q.Encode()
 	}
 	req, err := http.NewRequest(http.MethodPost, u, bytes.NewReader(data))
 	if err != nil {
@@ -427,16 +436,21 @@ func cmdPublish(args []string) error {
 	store := fs.String("store", envOr("PHOEDOX_STORE_URL", "https://store.phoedox.com"), "store address")
 	beta := fs.Bool("beta", false, "publish to the beta channel")
 	audience := fs.String("audience", "", "audience of the GitHub ID token (default: the store's host)")
+	logoRights := fs.Bool("logo-rights", false, "confirm that you may use the logo in the package (ADR-0090)")
 	_ = fs.Parse(reorder(args))
 	if fs.NArg() != 1 {
-		return errors.New("usage: phx-plugin publish <package> [-beta] [-store URL]")
+		return errors.New("usage: phx-plugin publish <package> [-beta] [-logo-rights] [-store URL]")
 	}
 	data, err := os.ReadFile(fs.Arg(0))
 	if err != nil {
 		return err
 	}
-	if _, err := manifestOf(data); err != nil {
+	m, err := manifestOf(data)
+	if err != nil {
 		return err
+	}
+	if m.Logo != "" && !*logoRights {
+		return errors.New("the package has a logo: confirm with -logo-rights that its brand allows you to use it (ADR-0090)")
 	}
 	hc := &http.Client{Timeout: 2 * time.Minute}
 	token, via := os.Getenv("PHOEDOX_STORE_TOKEN"), "token"
@@ -460,7 +474,7 @@ func cmdPublish(args []string) error {
 			return err
 		}
 	}
-	res, err := Publish(hc, *store, data, token, sig, *beta)
+	res, err := Publish(hc, *store, data, token, sig, *beta, *logoRights && m.Logo != "")
 	if err != nil {
 		return err
 	}
@@ -484,6 +498,9 @@ func envOr(k, def string) string {
 	return def
 }
 
+// boolFlags take no value.
+var boolFlags = map[string]bool{"beta": true, "logo-rights": true}
+
 // reorder puts flags before positional arguments (pack dir -o out).
 func reorder(args []string) []string {
 	var flags, pos []string
@@ -491,7 +508,7 @@ func reorder(args []string) []string {
 		a := args[i]
 		if strings.HasPrefix(a, "-") {
 			flags = append(flags, a)
-			if !strings.Contains(a, "=") && a != "-beta" && a != "--beta" && i+1 < len(args) {
+			if !strings.Contains(a, "=") && !boolFlags[strings.TrimLeft(a, "-")] && i+1 < len(args) {
 				flags = append(flags, args[i+1])
 				i++
 			}

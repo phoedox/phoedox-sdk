@@ -82,10 +82,10 @@ func TestPackSignPublish(t *testing.T) {
 	}
 
 	// Publish: success and a store error with a hint.
-	var gotAuth, gotSig string
+	var gotAuth, gotSig, gotQuery string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
-		gotAuth, gotSig = r.Header.Get("Authorization"), r.Header.Get("Phoedox-Author-Signature")
+		gotAuth, gotSig, gotQuery = r.Header.Get("Authorization"), r.Header.Get("Phoedox-Author-Signature"), r.URL.RawQuery
 		if r.URL.Query().Get("channel") == "beta" {
 			w.WriteHeader(409)
 			_, _ = w.Write([]byte(`{"code":"version_exists","error":"this version exists already"}`))
@@ -96,11 +96,17 @@ func TestPackSignPublish(t *testing.T) {
 		_ = json.NewEncoder(w).Encode(map[string]any{"id": "de.example.forest", "version": "1.0.0", "sha256": hex.EncodeToString(sum[:]), "reviewState": "pending", "channel": "stable"})
 	}))
 	defer srv.Close()
-	res, err := Publish(srv.Client(), srv.URL, data, "phxu_abc", h, false)
+	if _, err := Publish(srv.Client(), srv.URL, data, "phxu_abc", h, false, true); err != nil || gotQuery != "logoRights=true" {
+		t.Fatalf("logo rights: %v %q", err, gotQuery)
+	}
+	if got := reorder([]string{"pkg.phxp", "-logo-rights", "-store", "x"}); strings.Join(got, " ") != "-logo-rights -store x pkg.phxp" {
+		t.Fatalf("reorder: %v", got)
+	}
+	res, err := Publish(srv.Client(), srv.URL, data, "phxu_abc", h, false, false)
 	if err != nil || res.ReviewState != "pending" || gotAuth != "Bearer phxu_abc" || gotSig != h {
 		t.Fatalf("publish: %v %+v %s", err, res, gotAuth)
 	}
-	if _, err := Publish(srv.Client(), srv.URL, data, "phxu_abc", "", true); err == nil || !strings.Contains(err.Error(), "raise the version") {
+	if _, err := Publish(srv.Client(), srv.URL, data, "phxu_abc", "", true, false); err == nil || !strings.Contains(err.Error(), "raise the version") {
 		t.Fatalf("hint: %v", err)
 	}
 }

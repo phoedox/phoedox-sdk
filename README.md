@@ -107,8 +107,11 @@ jobs:
 set it as `PHOEDOX_STORE_TOKEN` (or the action's `upload-token`):
 
 ```bash
-PHOEDOX_STORE_TOKEN=phxu_… phx-plugin publish dist/de.example.ups-1.2.0.phxp [-beta]
+PHOEDOX_STORE_TOKEN=phxu_… phx-plugin publish dist/de.example.ups-1.2.0.phxp [-beta] [-logo-rights]
 ```
+
+A package with a `logo` needs `-logo-rights` (action input `logo-rights: true`): you confirm that the
+brand's guidelines allow you to use it (ADR-0090).
 
 The author token (`phxa_…`) still works, but it can do everything your account can; moderators see which
 way a version came in.
